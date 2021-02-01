@@ -17,6 +17,10 @@ def choose(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    selected_ps = [p for p in paragraphs if select(p)]
+    if k >= len(selected_ps):
+        return ''
+    return selected_ps[k]
     # END PROBLEM 1
 
 
@@ -33,6 +37,14 @@ def about(topic):
     assert all([lower(x) == x for x in topic]), 'topics should be lowercase.'
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def sentence_about(sentence):
+        words = split(sentence)
+        words = [lower(remove_punctuation(w)) for w in words]
+        for w in words:
+            if w in topic:
+                return True
+        return False
+    return sentence_about
     # END PROBLEM 2
 
 
@@ -57,6 +69,14 @@ def accuracy(typed, reference):
     reference_words = split(reference)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if len(typed_words) == 0:
+        return 0.0
+    m = min(len(typed_words), len(reference_words))
+    counter = 0
+    for i in range(m):
+        if typed_words[i] == reference_words[i]:
+            counter += 1
+    return counter*100.0/len(typed_words)
     # END PROBLEM 3
 
 
@@ -65,6 +85,7 @@ def wpm(typed, elapsed):
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    return len(typed)*12.0/elapsed
     # END PROBLEM 4
 
 
@@ -116,24 +137,27 @@ def shifty_shifts(start, goal, limit):
 
 def pawssible_patches(start, goal, limit):
     """A diff function that computes the edit distance from START to GOAL."""
-    assert False, 'Remove this line'
+    #assert False, 'Remove this line'
 
-    if ______________: # Fill in the condition
+    if len(start) == 0 or len(goal) == 0: # Fill in the condition
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return min(len(goal) + len(start), limit + 1)
         # END
 
-    elif ___________: # Feel free to remove or add additional cases
+    elif limit < 0: # Feel free to remove or add additional cases
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return 1
         # END
 
     else:
-        add_diff = ... # Fill in these lines
-        remove_diff = ...
-        substitute_diff = ...
+        add_diff = 1 + pawssible_patches(start, goal[1:], limit - 1) # Fill in these lines
+        remove_diff = 1 + pawssible_patches(start[1:], goal, limit - 1)
+        substitute_diff = (start[0] != goal[0]) + pawssible_patches(start[1:], goal[1:], limit - (start[0] != goal[0]))
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return min(add_diff, remove_diff, substitute_diff)
         # END
 
 
@@ -151,6 +175,14 @@ def report_progress(typed, prompt, user_id, send):
     """Send a report of your id and progress so far to the multiplayer server."""
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    counter = 0
+    for i in range(len(typed)):
+        if typed[i] != prompt[i]:
+            break
+        counter += 1
+    p = counter / len(prompt)
+    send({"id": user_id, "progress": p})
+    return p
     # END PROBLEM 8
 
 
@@ -177,6 +209,14 @@ def time_per_word(times_per_player, words):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    times = []
+    for player_times in times_per_player:
+        n = len(player_times)
+        tmp = []
+        for i in range(n - 1):
+            tmp .append(player_times[i + 1] - player_times[i])
+        times.append(tmp)
+    return game(words, times)
     # END PROBLEM 9
 
 
@@ -192,6 +232,22 @@ def fastest_words(game):
     word_indices = range(len(all_words(game)))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    best_players = []
+    for wi in word_indices:
+        best_p = 0
+        best_time = time(game, 0, wi)
+        for pi in player_indices:
+            if time(game, pi, wi) < best_time:
+                best_p = pi
+                best_time = time(game, pi, wi)
+        best_players.append(best_p)
+    res = []
+    for i in player_indices:
+        res.append([])
+    for wi in word_indices:
+        res[best_players[wi]].append(word_at(game, wi))
+    return res
+    
     # END PROBLEM 10
 
 
